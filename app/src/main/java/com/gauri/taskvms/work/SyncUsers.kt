@@ -22,11 +22,13 @@ class SyncUsers(private val appContext: Context, workerParams: WorkerParameters)
         return withContext(Dispatchers.IO){
             val users = AppDatabase.getDatabase(appContext).getUserDao().getAllUser()
             users.forEach {
-                if(isConnected.value){
-                    val updateUser = User(it.currentCompany,it.dob,it.email,it.firstName,it.isWorking,it.lastName)
-                    val res = retrofitServices.saveUser(updateUser)
-                    if(res.isSuccessful){
-                        AppDatabase.getDatabase(appContext).getUserDao().updateStatus(res.body()?.status?:false,it.id)
+                if(!it.isSynced){
+                    if(isConnected.value){
+                        val updateUser = User(it.currentCompany,it.dob,it.email,it.firstName,it.isWorking,it.lastName)
+                        val res = retrofitServices.saveUser(updateUser)
+                        if(res.isSuccessful){
+                            AppDatabase.getDatabase(appContext).getUserDao().updateStatus(res.body()?.status?:false,it.id)
+                        }
                     }
                 }
             }
